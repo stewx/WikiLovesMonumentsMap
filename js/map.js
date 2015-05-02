@@ -4,24 +4,27 @@ var markers = [];
 var idsMapped = [];
 var openInfoWindows = [];
 var markerLimit = 1000;
-    
-  function initialize() {
+
+function initialize() {
     var mapOptions = {
-      center: { lat: 44.6516904, lng: -63.5839593},
-      zoom: 15
+        center: {
+            lat: 44.6516904,
+            lng: -63.5839593
+        },
+        zoom: 15
     };
     map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-              
+
     // Bind events
-   google.maps.event.addListener(map, 'bounds_changed', function() {
+    google.maps.event.addListener(map, 'bounds_changed', function() {
         // Get monuments
         var bounds = map.getBounds();
         var northeastCoords = bounds.getNorthEast();
         var southwestCoords = bounds.getSouthWest();
         var monuments = [];
-    
+
         $.ajax({
-            url: 'http://tools.wmflabs.org/heritage/api/api.php', 
+            url: 'http://tools.wmflabs.org/heritage/api/api.php',
             method: "GET",
             dataType: "jsonp",
             jsonpCallback: 'wlm' + makeid(),
@@ -33,55 +36,58 @@ var markerLimit = 1000;
                 bbox: [southwestCoords.lng(), southwestCoords.lat(), northeastCoords.lng(), northeastCoords.lat()].join(),
                 format: 'json',
                 limit: '500'
-                },
+            },
             timeout: 10000, // 10 second timeout
-            success: function(data){
-                
+            success: function(data) {
+
                 monuments = data.monuments;
                 console.log("Got " + monuments.length + " monuments from API.")
-                
+
                 // Add markers
                 addMarkers(monuments);
-                
+
                 // Clean up old markers if needed
                 cleanupMarkers();
             }
         });
-        
+
     });
-  
-  }
-  google.maps.event.addDomListener(window, 'load', initialize);
- 
+
+}
+google.maps.event.addDomListener(window, 'load', initialize);
+
 function addMarkers(monuments) {
     for (var i = 0; i < monuments.length; i++) {
         var monument = monuments[i];
-        if (idsMapped.indexOf(monument.id) === -1){
+        if (idsMapped.indexOf(monument.id) === -1) {
             var icon = monument.image.length === 0 ? "images/withoutimageicon.png" : "images/withimageicon.png";
             var marker = new google.maps.Marker({
                 map: map,
-                position: { lat: monument.lat, lng: monument.lon},
-                title : monument.name,
+                position: {
+                    lat: monument.lat,
+                    lng: monument.lon
+                },
+                title: monument.name,
                 icon: icon,
                 animation: google.maps.Animation.DROP
             });
             markers.push(marker);
-            
+
             var contentString = '<h3>' + monument.name + '</h3>' +
-            '<p>Address: ' + monument.address + '</p>' +
-            '<p><a href="' + monument.source + '">View on Wikipedia</a></p>' +
-            '<p><a target="_blank" href="http://www.historicplaces.ca/en/rep-reg/place-lieu.aspx?id=' + monument.id + '">View official listing</a></p>';
+                '<p>Address: ' + monument.address + '</p>' +
+                '<p><a href="' + monument.source + '">View on Wikipedia</a></p>' +
+                '<p><a target="_blank" href="http://www.historicplaces.ca/en/rep-reg/place-lieu.aspx?id=' + monument.id + '">View official listing</a></p>';
             var infoWindow = new google.maps.InfoWindow();
             bindInfoWindow(marker, map, infoWindow, contentString);
-            
+
             idsMapped.push(monument.id);
         }
-   }
+    }
 }
 
 function bindInfoWindow(marker, map_object, infowindow, html) {
     google.maps.event.addListener(marker, 'click', function() {
-        for (var i = 0; i < openInfoWindows.length; i++) { 
+        for (var i = 0; i < openInfoWindows.length; i++) {
             openInfoWindows[i].close();
         }
         openInfoWindows = [];
@@ -89,7 +95,7 @@ function bindInfoWindow(marker, map_object, infowindow, html) {
         infowindow.open(map_object, marker);
         openInfoWindows.push(infowindow);
     });
-} 
+}
 
 function cleanupMarkers() {
 
@@ -98,10 +104,10 @@ function cleanupMarkers() {
         var countRemoved = 0;
         for (var i = 0; i < markers.length; i++) {
             if (markers.length <= markerLimit) {
-                console.log("Number of markers is within the limit (" + markers.length + "/" + markerLimit+ ").");
+                console.log("Number of markers is within the limit (" + markers.length + "/" + markerLimit + ").");
                 break;
             }
-            
+
             if (!map.getBounds().contains(markers[i].getPosition())) {
                 // Delete from marker list
                 markers[i].setMap(null);
@@ -118,7 +124,7 @@ function makeid() {
     var text = "";
     var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    for( var i=0; i < 5; i++ )
+    for (var i = 0; i < 5; i++)
         text += possible.charAt(Math.floor(Math.random() * possible.length));
 
     return text;
