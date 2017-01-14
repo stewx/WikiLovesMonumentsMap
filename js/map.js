@@ -72,11 +72,20 @@ function addMarkers(monuments) {
                 animation: google.maps.Animation.DROP
             });
             markers.push(marker);
-
+            var officialUrl = '';
             var contentString = '<h3>' + monument.name + '</h3>' +
                 '<p>Address: ' + monument.address + '</p>' +
-                '<p><a href="' + monument.source + '">View on Wikipedia</a></p>' +
-                '<p><a target="_blank" href="http://www.historicplaces.ca/en/rep-reg/place-lieu.aspx?id=' + monument.id + '">View official listing</a></p>';
+                '<p><a href="' + monument.source + '">View on Wikipedia</a></p>';
+            if (monument.country === 'ca') {
+                officialUrl = 'http://www.historicplaces.ca/en/rep-reg/place-lieu.aspx?id=' + monument.id;
+                
+            } else if (monument.registrant_url) {
+                officialUrl = monument.registrant_url;
+            }
+            if (officialUrl) {
+                contentString += '<p><a target="_blank" href="' + officialUrl + '">View official listing</a></p>';
+            }
+            
             var infoWindow = new google.maps.InfoWindow();
             bindInfoWindow(marker, map, infoWindow, contentString);
 
