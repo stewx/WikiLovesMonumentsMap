@@ -71,7 +71,7 @@ function loadMonuments() {
   var monuments = [];
 
   $.ajax({
-    url: 'http://tools.wmflabs.org/heritage/api/api.php',
+    url: 'https://tools.wmflabs.org/heritage/api/api.php',
     method: "GET",
     dataType: "jsonp",
     jsonpCallback: 'wlm' + makeid(),
